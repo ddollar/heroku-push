@@ -31,7 +31,9 @@ class Heroku::Command::Push < Heroku::Command::Base
 
     user = api.post_login("", Heroku::Auth.password).body["email"]
 
-    slug_url = Anvil::Engine.build source, :buildpack => options[:buildpack]
+    slug_url = Anvil::Engine.build source,
+      :buildpack => options[:buildpack],
+      :ignore    => process_gitignore(source)
 
     action("Releasing to #{app}") do
       begin
@@ -67,6 +69,14 @@ private
       puts "done"
     else
       error "unrecognized buildpack specification: #{buildpack}"
+    end
+  end
+
+  def process_gitignore(source)
+    return [] if is_url?(source)
+    return [] unless File.exists?("#{source}/.git")
+    Dir.chdir(source) do
+      %x{ git ls-files --others -i --exclude-standard }.split("\n")
     end
   end
 

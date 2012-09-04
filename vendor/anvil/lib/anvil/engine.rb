@@ -1,5 +1,6 @@
 require "anvil"
 require "anvil/builder"
+require "anvil/helpers"
 require "anvil/manifest"
 require "anvil/version"
 require "progress"
@@ -7,6 +8,8 @@ require "thread"
 require "uri"
 
 class Anvil::Engine
+
+  extend Anvil::Helpers
 
   def self.build(source, options={})
     if options[:pipeline]
@@ -23,13 +26,19 @@ class Anvil::Engine
     builder = if is_url?(source)
       Anvil::Builder.new(source)
     else
-      manifest = Anvil::Manifest.new(File.expand_path(source))
+      manifest = Anvil::Manifest.new(File.expand_path(source),
+        :cache  => read_anvil_metadata(source, "cache"),
+        :ignore => options[:ignore])
       upload_missing manifest
       manifest
     end
 
     slug_url = builder.build(build_options) do |chunk|
       print chunk
+    end
+
+    unless is_url?(source)
+      write_anvil_metadata source, "cache", manifest.cache_url
     end
 
     old_stdout.puts slug_url if options[:pipeline]

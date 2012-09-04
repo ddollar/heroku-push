@@ -15,10 +15,11 @@ class Anvil::Manifest
   attr_reader :dir
   attr_reader :manifest
 
-  def initialize(dir=nil, cache_url=nil)
+  def initialize(dir=nil, options={})
     @dir = dir
-    @manifest = @dir ? directory_manifest(@dir) : {}
-    @cache_url = cache_url
+    @ignore = options[:ignore] || []
+    @manifest = @dir ? directory_manifest(@dir, :ignore => @ignore) : {}
+    @cache_url = options[:cache]
   end
 
   def build(options={})
@@ -110,17 +111,21 @@ private
     ENV["ANVIL_HOST"] || "https://api.anvilworks.org"
   end
 
-  def directory_manifest(dir)
+  def directory_manifest(dir, options={})
     root = Pathname.new(dir)
+    ignore = options[:ignore] || []
 
     Dir.glob(File.join(dir, "**", "*"), File::FNM_DOTMATCH).inject({}) do |hash, file|
+      relative = Pathname.new(file).relative_path_from(root).to_s
+      next(hash) if ignore.include?(relative)
       next(hash) if %w( . .. ).include?(File.basename(file))
       next(hash) if File.directory?(file)
       next(hash) if File.pipe?(file)
+      next(hash) if file =~ /\.anvil/
       next(hash) if file =~ /\.git/
       next(hash) if file =~ /\.swp$/
       next(hash) unless file =~ /^[A-Za-z0-9\-\_\.\/]*$/
-      hash[Pathname.new(file).relative_path_from(root).to_s] = file_manifest(file)
+      hash[relative] = file_manifest(file)
       hash
     end
   end
