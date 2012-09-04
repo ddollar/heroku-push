@@ -8,14 +8,17 @@ Push to Heroku without using Git.
 
 ## Usage
 
-    Usage: heroku push [SOURCE]
+    # deploy the current directory
+    $ heroku push
 
-     deploy code to heroku
+    # deploy an arbitrary directory
+    $ heroku push ~/myapp
 
-     if SOURCE is a local directory, the contents of the directory will be built
-     if SOURCE is a git URL, the contents of the repo will be built
-     if SOURCE is a tarball URL, the contents of the tarball will be built
+    # deploy a git repo
+    $ heroku push https://github.com/ddollar/anvil.git
 
-     SOURCE will default to "."
+    # use a custom buildpack (see https://buildpacks.heroku.com)
+    $ heroku push -b heroku/nodejs
 
-     -b, --buildpack URL  # use a custom buildpack
+    # use a local directory as a buildpack
+    $ heroku push -b ~/mybuildpack
