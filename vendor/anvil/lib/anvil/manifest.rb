@@ -39,6 +39,7 @@ class Anvil::Manifest
       "buildpack" => options[:buildpack],
       "cache"     => @cache_url,
       "env"       => json_encode(options[:env] || {}),
+      "keepalive" => "1",
       "manifest"  => self.to_json
     })
 
@@ -50,7 +51,7 @@ class Anvil::Manifest
 
       begin
         res.read_body do |chunk|
-          yield chunk
+          yield chunk.gsub("\000\000\000", "")
         end
       rescue EOFError
         puts
