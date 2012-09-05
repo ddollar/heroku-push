@@ -27,6 +27,8 @@ class Anvil::Builder
 
     req = Net::HTTP::Post.new uri.request_uri
 
+    req.initialize_http_header "User-Agent" => Anvil.agent
+
     req.set_form_data({
       "buildpack" => options[:buildpack],
       "cache"     => options[:cache],
@@ -59,7 +61,11 @@ class Anvil::Builder
 private
 
   def anvil
-    @anvil ||= RestClient::Resource.new(anvil_host)
+    @anvil ||= RestClient::Resource.new(anvil_host, :headers => anvil_headers)
+  end
+
+  def anvil_headers
+    { "User-Agent" => Anvil.agent }
   end
 
   def anvil_host
