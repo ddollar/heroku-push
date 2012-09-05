@@ -1,3 +1,4 @@
+require "anvil"
 require "anvil/engine"
 require "cgi"
 require "digest/sha2"
@@ -30,6 +31,8 @@ class Heroku::Command::Push < Heroku::Command::Base
     release_to = app # validate that we have an app
 
     user = api.post_login("", Heroku::Auth.password).body["email"]
+
+    Anvil.append_agent "interface=push user=#{user} app=#{release_to}"
 
     slug_url = Anvil::Engine.build source,
       :buildpack => options[:buildpack],
