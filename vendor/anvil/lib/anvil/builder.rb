@@ -27,6 +27,8 @@ class Anvil::Builder
 
     req = Net::HTTP::Post.new uri.request_uri
 
+    Anvil.append_agent "source=#{source}"
+
     req.initialize_http_header "User-Agent" => Anvil.agent
 
     req.set_form_data({
