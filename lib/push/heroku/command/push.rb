@@ -32,7 +32,9 @@ class Heroku::Command::Push < Heroku::Command::Base
 
     user = api.post_login("", Heroku::Auth.password).body["email"]
 
-    Anvil.append_agent "interface=push user=#{user} app=#{release_to}"
+    Anvil.append_agent "(heroku-push)"
+    Anvil.headers["X-Heroku-User"] = user
+    Anvil.headers["X-Heroku-App"]  = release_to
 
     slug_url = Anvil::Engine.build source,
       :buildpack => options[:buildpack],
