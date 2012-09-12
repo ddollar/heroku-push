@@ -27,9 +27,12 @@ class Anvil::Builder
 
     req = Net::HTTP::Post.new uri.request_uri
 
-    Anvil.append_agent "source=#{source}"
-
     req.initialize_http_header "User-Agent" => Anvil.agent
+
+    Anvil.headers.each do |name, val|
+      next if name.to_s.strip == ""
+      req.initialize_http_header name => val.to_s
+    end
 
     req.set_form_data({
       "buildpack" => options[:buildpack],
