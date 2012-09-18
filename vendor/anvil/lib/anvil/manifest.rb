@@ -128,6 +128,10 @@ private
     root = Pathname.new(dir)
     ignore = options[:ignore] || []
 
+    if File.exists?("#{dir}/.slugignore")
+      ignore += File.read("#{dir}/.slugignore").split("\n")
+    end
+
     Dir.glob(File.join(dir, "**", "*"), File::FNM_DOTMATCH).inject({}) do |hash, file|
       relative = Pathname.new(file).relative_path_from(root).to_s
       next(hash) if ignore.include?(relative)
