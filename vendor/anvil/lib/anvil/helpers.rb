@@ -17,11 +17,17 @@ module Anvil::Helpers
     dir
   end
 
+  def is_url?(string)
+    URI.parse(string).scheme rescue nil
+  end
+
   def read_anvil_metadata(root, name)
+    return nil if is_url?(root)
     File.open(File.join(anvil_metadata_dir(root), name)).read.chomp rescue nil
   end
 
   def write_anvil_metadata(root, name, data)
+    return if is_url?(root)
     File.open(File.join(anvil_metadata_dir(root), name), "w") do |file|
       file.puts data
     end

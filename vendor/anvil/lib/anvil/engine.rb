@@ -20,7 +20,7 @@ class Anvil::Engine
     source ||= "."
 
     build_options = {
-      :buildpack => prepare_buildpack(options[:buildpack].to_s)
+      :buildpack => prepare_buildpack(options[:buildpack] || read_anvil_metadata(source, "buildpack"))
     }
 
     builder = if is_url?(source)
@@ -37,9 +37,8 @@ class Anvil::Engine
       print chunk
     end
 
-    unless is_url?(source)
-      write_anvil_metadata source, "cache", manifest.cache_url
-    end
+    write_anvil_metadata source, "buildpack", options[:buildpack].to_s
+    write_anvil_metadata source, "cache",     manifest.cache_url
 
     old_stdout.puts slug_url if options[:pipeline]
 
@@ -50,11 +49,8 @@ class Anvil::Engine
     puts Anvil::VERSION
   end
 
-  def self.is_url?(string)
-    URI.parse(string).scheme rescue nil
-  end
-
   def self.prepare_buildpack(buildpack)
+    buildpack = buildpack.to_s
     if buildpack == ""
       buildpack
     elsif is_url?(buildpack)
