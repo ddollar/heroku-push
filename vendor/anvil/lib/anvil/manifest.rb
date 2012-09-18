@@ -129,7 +129,11 @@ private
     ignore = options[:ignore] || []
 
     if File.exists?("#{dir}/.slugignore")
-      ignore += File.read("#{dir}/.slugignore").split("\n")
+      File.read("#{dir}/.slugignore").split("\n").each do |match|
+        Dir["#{dir}/**/#{match}"].each do |ignored_file|
+          ignore.push Pathname.new(ignored_file).relative_path_from(root).to_s
+        end
+      end
     end
 
     Dir.glob(File.join(dir, "**", "*"), File::FNM_DOTMATCH).inject({}) do |hash, file|
