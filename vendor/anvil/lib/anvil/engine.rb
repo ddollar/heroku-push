@@ -32,10 +32,11 @@ class Anvil::Engine
         :cache  => read_anvil_metadata(source, "cache"),
         :ignore => options[:ignore])
       upload_missing manifest
-      manifest
 
       write_anvil_metadata source, "buildpack", buildpack
       write_anvil_metadata source, "cache",     manifest.cache_url
+
+      manifest
     end
 
     slug_url = builder.build(build_options) do |chunk|
