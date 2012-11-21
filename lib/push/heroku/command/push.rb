@@ -41,12 +41,12 @@ class Heroku::Command::Push < Heroku::Command::Base
       :ignore    => process_gitignore(source)
 
     action("Releasing to #{app}") do
-      begin
-        release = heroku.release(app, "Pushed by #{user}", :slug_url => slug_url)
-        status release["release"]
-      rescue RestClient::Forbidden => ex
-        error ex.http_body
-      end
+      cisaurus = Cisaurus.new(Heroku::Auth.password)
+      release = cisaurus.release(app, "Pushed by #{user}", slug_url) {
+        print "."
+        $stdout.flush
+      }
+      status release["release"]
     end
   rescue Anvil::Builder::BuildError => ex
     puts "ERROR: Build failed, #{ex.message}"
