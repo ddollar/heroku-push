@@ -1,6 +1,6 @@
 class Cisaurus
 
-  CISAURUS_CLIENT_VERSION = "0.7-ALPHA"
+  CISAURUS_CLIENT_VERSION = "0.8-ALPHA"
   CISAURUS_HOST = ENV['CISAURUS_HOST'] || "cisaurus.heroku.com"
 
   def initialize(api_key, host = CISAURUS_HOST, api_version = "v1")
