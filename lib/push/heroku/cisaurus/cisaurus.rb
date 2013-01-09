@@ -1,5 +1,3 @@
-require "json"
-
 class Cisaurus
 
   CISAURUS_CLIENT_VERSION = "0.7-ALPHA"
@@ -12,7 +10,7 @@ class Cisaurus
   end
 
   def downstreams(app, depth=nil)
-    JSON.parse RestClient.get pipeline_resource(app, "downstreams"), options(params :depth => depth)
+    Heroku::OkJson.decode RestClient.get pipeline_resource(app, "downstreams"), options(params :depth => depth)
   end
 
   def addDownstream(app, ds)
@@ -24,7 +22,7 @@ class Cisaurus
   end
 
   def diff(app)
-    JSON.parse RestClient.get pipeline_resource(app, "diff"), options
+    Heroku::OkJson.decode RestClient.get pipeline_resource(app, "diff"), options
   end
 
   def promote(app, interval = 2)
@@ -34,19 +32,19 @@ class Cisaurus
       sleep(interval)
       yield
     end
-    JSON.parse response
+    Heroku::OkJson.decode response
   end
 
   def release(app, description, slug_url, interval = 2)
-    payload = {:description => description, :slug_url => slug_url}
+    payload = {'description' => description, 'slug_url' => slug_url}
     extras = {:content_type => :json, :accept => :json}
-    response = RestClient.post app_resource(app, "release"), JSON.generate(payload), options(extras)
+    response = RestClient.post app_resource(app, "release"), Heroku::OkJson.encode(payload), options(extras)
     while response.code == 202
       response = RestClient.get @base_url + response.headers[:location], options(extras)
       sleep(interval)
       yield
     end
-    JSON.parse response
+    Heroku::OkJson.decode response
   end
 
   private
