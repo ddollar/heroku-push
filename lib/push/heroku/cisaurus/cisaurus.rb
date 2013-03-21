@@ -7,6 +7,14 @@ class Cisaurus
 
   def initialize(api_key, host = CISAURUS_HOST, api_version = "v1")
     protocol  = (host.start_with? "localhost") ? "http" : "https"
+
+    RestClient.proxy = case URI.parse(realize_full_uri(uri)).scheme
+    when "http"
+      http_proxy
+    when "https"
+      https_proxy
+    end
+
     @base_url = "#{protocol}://:#{api_key}@#{host}"
     @ver_url  = "#{@base_url}/#{api_version}"
   end
@@ -53,6 +61,30 @@ class Cisaurus
 
   def app_resource(app, *extras)
     "#{@ver_url}/" + extras.unshift("apps/#{app}").join("/")
+  end
+
+  def http_proxy
+    proxy = ENV['HTTP_PROXY'] || ENV['http_proxy']
+    if proxy && !proxy.empty?
+      unless /^[^:]+:\/\// =~ proxy
+        proxy = "http://" + proxy
+      end
+      proxy
+    else
+      nil
+    end
+  end
+
+  def https_proxy
+    proxy = ENV['HTTPS_PROXY'] || ENV['https_proxy']
+    if proxy && !proxy.empty?
+      unless /^[^:]+:\/\// =~ proxy
+        proxy = "https://" + proxy
+      end
+      proxy
+    else
+      nil
+    end
   end
 
   def pipeline_resource(app, *extras)
