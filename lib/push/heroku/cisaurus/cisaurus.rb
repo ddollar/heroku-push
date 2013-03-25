@@ -8,7 +8,7 @@ class Cisaurus
   def initialize(api_key, host = CISAURUS_HOST, api_version = "v1")
     protocol  = (host.start_with? "localhost") ? "http" : "https"
 
-    RestClient.proxy = case URI.parse(realize_full_uri(uri)).scheme
+    RestClient.proxy = case protocol
     when "http"
       http_proxy
     when "https"
