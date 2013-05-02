@@ -76,7 +76,7 @@ class Cisaurus
   end
 
   def https_proxy
-    proxy = ENV['HTTPS_PROXY'] || ENV['https_proxy']
+    proxy = ENV['HTTPS_PROXY'] || ENV['https_proxy'] || ENV["HTTP_PROXY"] || ENV["http_proxy"]
     if proxy && !proxy.empty?
       unless /^[^:]+:\/\// =~ proxy
         proxy = "https://" + proxy
