@@ -14,7 +14,8 @@ class Anvil::CLI < Thor
   desc "build [SOURCE]", "Build an application"
 
   method_option :buildpack, :type => :string,  :aliases => "-b", :desc => "Use a specific buildpack"
-  method_option :pipeline,  :type => :boolean, :aliases => "-p", :desc => "Pipe compile output to stderr and put the slug url on stdout"
+  method_option :pipeline,  :type => :boolean, :aliases => "-p", :desc => "Pipe build output to stderr and put the slug url on stdout"
+  method_option :type,      :type => :string,  :aliases => "-t", :desc => "Build a specific slug type (tgz, deb)"
 
   def build(source=nil)
     Anvil::Engine.build(source, options)

@@ -22,7 +22,8 @@ class Anvil::Engine
     buildpack = options[:buildpack] || read_anvil_metadata(source, "buildpack")
 
     build_options = {
-      :buildpack => prepare_buildpack(buildpack)
+      :buildpack => prepare_buildpack(buildpack),
+      :type      => options[:type] || "tgz"
     }
 
     builder = if is_url?(source)

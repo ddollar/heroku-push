@@ -4,6 +4,7 @@ require "net/http"
 require "net/https"
 require "pathname"
 require "rest_client"
+require "find"
 
 class Anvil::Manifest
 
@@ -24,7 +25,24 @@ class Anvil::Manifest
 
   def build(options={})
     uri  = URI.parse("#{anvil_host}/manifest/build")
-    http = Net::HTTP.new(uri.host, uri.port)
+
+    if uri.scheme == "https"
+      proxy = https_proxy
+    else
+      proxy = http_proxy
+    end
+
+    if proxy
+      proxy_uri = URI.parse(proxy)
+      http = Net::HTTP.new(uri.host, uri.port, proxy_uri.host, proxy_uri.port, proxy_uri.user, proxy_uri.password)
+    else
+      http = Net::HTTP.new(uri.host, uri.port)
+    end
+
+    if uri.scheme == "https"
+      http.use_ssl = true
+      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    end
 
     if uri.scheme == "https"
       http.use_ssl = true
@@ -48,7 +66,8 @@ class Anvil::Manifest
       "cache"     => @cache_url,
       "env"       => json_encode(options[:env] || {}),
       "keepalive" => "1",
-      "manifest"  => self.to_json
+      "manifest"  => self.to_json,
+      "type"      => options[:type]
     })
 
     slug_url = nil
@@ -126,7 +145,7 @@ private
 
   def directory_manifest(dir, options={})
     root = Pathname.new(dir)
-    ignore = options[:ignore] || []
+    ignore = (options[:ignore] || []) + [".anvil", ".git"]
 
     if File.exists?("#{dir}/.slugignore")
       File.read("#{dir}/.slugignore").split("\n").each do |match|
@@ -136,19 +155,21 @@ private
       end
     end
 
-    Dir.glob(File.join(dir, "**", "*"), File::FNM_DOTMATCH).inject({}) do |hash, file|
-      relative = Pathname.new(file).relative_path_from(root).to_s
-      next(hash) if ignore.include?(relative)
-      next(hash) if %w( . .. ).include?(File.basename(file))
-      next(hash) if File.directory?(file)
-      next(hash) if File.pipe?(file)
-      next(hash) if file =~ /\.anvil/
-      next(hash) if file =~ /\.git/
-      next(hash) if file =~ /\.swp$/
-      next(hash) unless file =~ /^[A-Za-z0-9\-\_\.\/]*$/
-      hash[relative] = file_manifest(file)
-      hash
+    manifest = {}
+    Find.find(dir) do |path|
+      relative = Pathname.new(path).relative_path_from(root).to_s
+      if File.directory?(path)
+        Find.prune if ignore.include?(relative) || ignore.include?(relative + "/")
+        next
+      end
+      next if ignore.include?(relative)
+      next if %w( . .. ).include?(File.basename(path))
+      next if File.pipe?(path)
+      next if path =~ /\.swp$/
+      next unless path =~ /^[A-Za-z0-9\-\_\.\/]*$/
+      manifest[relative] = file_manifest(path)
     end
+    manifest
   end
 
   def file_manifest(file)
@@ -198,6 +219,30 @@ private
       end
     end
     threads.each(&:join)
+  end
+
+  def http_proxy
+    proxy = ENV['HTTP_PROXY'] || ENV['http_proxy']
+    if proxy && !proxy.empty?
+      unless /^[^:]+:\/\// =~ proxy
+        proxy = "http://" + proxy
+      end
+      proxy
+    else
+      nil
+    end
+  end
+
+  def https_proxy
+    proxy = ENV['HTTPS_PROXY'] || ENV['https_proxy'] || ENV["HTTP_PROXY"] || ENV["http_proxy"]
+    if proxy && !proxy.empty?
+      unless /^[^:]+:\/\// =~ proxy
+        proxy = "https://" + proxy
+      end
+      proxy
+    else
+      nil
+    end
   end
 
 end
