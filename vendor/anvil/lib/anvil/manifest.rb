@@ -132,6 +132,7 @@ class Anvil::Manifest
 private
 
   def anvil
+    RestClient.proxy = ENV["HTTP_PROXY"]
     @anvil ||= RestClient::Resource.new(anvil_host, :headers => anvil_headers)
   end
 
