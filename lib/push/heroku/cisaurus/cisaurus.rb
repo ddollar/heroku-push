@@ -99,7 +99,8 @@ class Cisaurus
     {
         'User-Agent'       => "heroku-push-cli/#{CISAURUS_CLIENT_VERSION}",
         'X-Ruby-Version'   => RUBY_VERSION,
-        'X-Ruby-Platform'  => RUBY_PLATFORM
+        'X-Ruby-Platform'  => RUBY_PLATFORM,
+        'X-Heroku-Host'    => ENV['HEROKU_HOST'] || 'heroku.com'
     }.merge(extras)
   end
 end
