@@ -167,7 +167,7 @@ private
       next if %w( . .. ).include?(File.basename(path))
       next if File.pipe?(path)
       next if path =~ /\.swp$/
-      next unless path =~ /^[A-Za-z0-9\-\_\.\/]*$/
+      next unless path =~ /^[A-Za-z0-9\-\_\.\/\:]*$/
       manifest[relative] = file_manifest(path)
     end
     manifest
