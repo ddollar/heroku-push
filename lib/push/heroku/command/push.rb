@@ -42,7 +42,7 @@ class Heroku::Command::Push < Heroku::Command::Base
 
     action("Releasing to #{app}") do
       cisaurus = Cisaurus.new(Heroku::Auth.password)
-      release = cisaurus.release(app, "Pushed by #{user}", slug_url) {
+      release = cisaurus.release(app, ENV["HEROKU_RELEASE_DESC"] || "Pushed by #{user}", slug_url) {
         print "."
         $stdout.flush
       }
