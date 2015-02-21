@@ -1,3 +1,5 @@
+**[DEPRECATED: The Anvil build service has been turned off, so heroku-push will no longer work](https://devcenter.heroku.com/changelog-items/613)**
+
 # heroku-push
 
 Push to Heroku without using Git.
